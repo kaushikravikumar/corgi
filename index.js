@@ -7,8 +7,8 @@ const bot = new SlackBot({
 });
 
 bot.on('message', (data) => {
-    if(data.type === 'message')
+    if(data.type === 'message' && data.files != null)
     {
-        bot.postMessageToChannel('general', data.text);
+        bot.postMessage(data.channel, data.files[0].url_private);
     }
 });
