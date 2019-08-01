@@ -1,4 +1,6 @@
 const SlackBot = require('slackbots');
+const fetch = require('node-fetch');
+const askForTagsText = "Now, what tag would you like to save this image under?";
 // const auth_token = process.env.SLACK_AUTH_TOKEN;
 
 const bot = new SlackBot({
@@ -9,16 +11,16 @@ const bot = new SlackBot({
 bot.on('message', (data) => {
     if(data.type === 'message' && data.files != null && data.channel != "")
     {
-        bot.postMessage(data.channel, "Now, what tag(s) would you like to save this image under? Seperate with commas!");
+        bot.postMessage(data.channel, askForTagsText);
         sendImageURL(data.files[0].url_private);
     }
 });
 
 sendImageURL = (imageURL) => {
     bot.on('message', (data) => {
-        if(data.type === 'message' && data.text != "")
+        if(data.type === 'message' && data.text != "" && data.text != askForTagsText)
         {
-            var tags = data.text.split(",").map(x => x.trim());
+            var tags = data.text.toLowerCase();
             storeImage(imageURL, tags);
         }
     });
@@ -39,9 +41,16 @@ function postData(url = '', data = {}) {
           referrer: 'no-referrer', // no-referrer, *client
           body: JSON.stringify(data), // body data type must match "Content-Type" header
       })
-      .then(response => response.json()); // parses JSON response into native JavaScript objects 
+      .then(response => response.json()) // parses JSON response into native JavaScript objects 
+      .catch(error => console.error('Error:', error));
   }
 
-storeImage = (imageURL, tags) => {
-    // TODO MAKE POST REQUEST TO BACKEND SERVICE HERE!
+storeImage = (myImageURL, myTags) => {
+    var data = {
+        imageURL: myImageURL,
+        tags: myTags
+    };
+    console.log(JSON.stringify(data));
+    var res = postData('https://hw19-corgi-slack-api.dev.buzzfeed.io/throw', data);
+    console.log(res);
 };
